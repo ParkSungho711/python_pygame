@@ -1,0 +1,67 @@
+import pygame
+
+pygame.init()
+
+# 화면 설정
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("이미지 캐릭터 움직이기")
+
+# 1. 캐릭터 이미지 불러오기
+# (파일 이름이 'player.png'라고 가정합니다)
+character = pygame.image.load("player.png")
+character_size = character.get_rect().size # 이미지의 크기를 자동으로 가져옴
+character_width = character_size[0]
+character_height = character_size[1]
+
+# 캐릭터 초기 위치
+x_pos = (screen_width / 2) - (character_width / 2)
+y_pos = screen_height - character_height
+
+# 속도
+speed = 0.6 # FPS가 높을 경우를 대비해 조금 부드럽게 조정
+
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    dt = clock.tick(60) # 게임 프레임 제한
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 키보드 입력
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        x_pos -= speed * dt
+    if keys[pygame.K_RIGHT]:
+        x_pos += speed * dt
+    if keys[pygame.K_UP]:
+        y_pos -= speed * dt
+    if keys[pygame.K_DOWN]:
+        y_pos += speed * dt
+
+    # 2. [핵심] 경계값 설정 (화면 밖으로 못 나가게)
+    # 가로 경계 처리
+    if x_pos < 0:
+        x_pos = 0
+    elif x_pos > screen_width - character_width:
+        x_pos = screen_width - character_width
+
+    # 세로 경계 처리
+    if y_pos < 0:
+        y_pos = 0
+    elif y_pos > screen_height - character_height:
+        y_pos = screen_height - character_height
+
+    # 화면 그리기
+    screen.fill((255, 255, 255))
+    
+    # 3. 사각형 대신 이미지를 그리기 (blit 함수 사용)
+    screen.blit(character, (x_pos, y_pos))
+
+    pygame.display.update()
+
+pygame.quit()
