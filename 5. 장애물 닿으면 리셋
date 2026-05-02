@@ -1,0 +1,52 @@
+import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("장애물에 닿으면 안 돼!")
+clock = pygame.time.Clock()
+
+# 1. 플레이어 설정 (파랑)
+player_x, player_y = 50, 300
+player_speed = 5
+
+# 2. 장애물 설정 (빨강)
+enemy_x, enemy_y = 400, 100
+enemy_speed_y = 5
+
+running = True
+while running:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 3. 키보드로 플레이어 이동
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]: player_x -= player_speed
+    if keys[pygame.K_RIGHT]: player_x += player_speed
+    if keys[pygame.K_UP]: player_y -= player_speed
+    if keys[pygame.K_DOWN]: player_y += player_speed
+
+    # 4. 장애물 자동 이동 (위아래 튕기기)
+    enemy_y += enemy_speed_y
+    if enemy_y <= 0 or enemy_y >= 550:
+        enemy_speed_y *= -1
+
+    # 5. [중요] 충돌 감지 로직
+    # 사각형 영역 생성 (x, y, 가로, 세로)
+    player_rect = pygame.Rect(player_x, player_y, 40, 40)
+    enemy_rect = pygame.Rect(enemy_x, enemy_y, 50, 50)
+
+    # 두 사각형이 겹쳤는지 확인
+    if player_rect.colliderect(enemy_rect):
+        print("앗! 부딪혔다!")
+        # 부딪히면 시작 위치로 되돌리기
+        player_x, player_y = 50, 300
+
+    # 6. 그리기
+    screen.fill((255, 255, 255))
+    pygame.draw.rect(screen, (0, 0, 255), player_rect) # 플레이어
+    pygame.draw.rect(screen, (255, 0, 0), enemy_rect)  # 장애물
+    pygame.display.update()
+
+pygame.quit()
