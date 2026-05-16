@@ -1,0 +1,82 @@
+import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("장애물에 닿으면 안 돼!")
+clock = pygame.time.Clock()
+
+# 폰트 지정
+# 컴퓨터에 기본으로 있는 폰트 사용
+font = pygame.font.SysFont("malgungothic", 40)
+# 게임 오버했을 때 나오는 글씨
+large_font = pygame.font.SysFont("malgungothic", 80)
+
+# 최초 시작할 때 점수를 반영하는 변수
+# 충돌     횟수
+collision_count = 0
+
+# 게임 상태 관리하는 변수
+game_over = False
+
+# 1. 플레이어 설정 (파랑)
+player_x, player_y = 50, 300
+player_speed = 5
+
+# 2. 장애물 설정 (빨강)
+enemy_x, enemy_y = 400, 100
+enemy_speed_y = 5
+
+running = True
+while running:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 3. 키보드로 플레이어 이동
+    if not game_over:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]: player_x -= player_speed
+        if keys[pygame.K_RIGHT]: player_x += player_speed
+        if keys[pygame.K_UP]: player_y -= player_speed
+        if keys[pygame.K_DOWN]: player_y += player_speed
+    
+        # 4. 장애물 자동 이동 (위아래 튕기기)
+        enemy_y += enemy_speed_y
+        if enemy_y <= 0 or enemy_y >= 550:
+            enemy_speed_y *= -1
+    
+        # 5. [중요] 충돌 감지 로직
+        # 사각형 영역 생성 (x, y, 가로, 세로)
+        player_rect = pygame.Rect(player_x, player_y, 40, 40)
+        enemy_rect = pygame.Rect(enemy_x, enemy_y, 50, 50)
+    
+        # 두 사각형이 겹쳤는지 확인
+        if player_rect.colliderect(enemy_rect):
+            print("앗! 부딪혔다!")
+            # 충돌하면 카운트가 1씩 증가
+            collision_count += 1
+            if collision_count >= 5:
+                game_over = True # 게임 오버 상태로 변경
+            # 부딪히면 시작 위치로 되돌리기
+            player_x, player_y = 50, 300
+
+    # 6. 그리기
+    screen.fill((255, 255, 255))
+
+    # 글씨를 이미지처럼 변환주는 코드
+    # 변수        이미지로 변환     화면에 보여줄 이미지    참      검은색
+    score_text = font.render(f'Hits : {collision_count} / 5', True, (0,0,0))
+
+    # 화면의 위치를 지정하기
+    screen.blit(score_text, (10, 10))
+
+    if game_over:
+        over_text = large_font.render("GAME OVER", True, (255,0,0))
+        screen.blit(over_text, (200, 300))
+    
+    pygame.draw.rect(screen, (0, 0, 255), player_rect) # 플레이어
+    pygame.draw.rect(screen, (255, 0, 0), enemy_rect)  # 장애물
+    pygame.display.update()
+
+pygame.quit()
